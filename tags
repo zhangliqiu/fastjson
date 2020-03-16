@@ -1,0 +1,29 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+T	fastjson.py	/^def T(v,msg=None):$/;"	f
+cls	fastjson.py	/^def cls():$/;"	f
+dictEdit	fastjson.py	/^def dictEdit(dis,forMat=None):$/;"	f
+dis	fastjson.py	/^dis=[('root','{}')]$/;"	v
+falseList	fastjson.py	/^falseList=['f','F','False','false','FALSE']$/;"	v
+formatDis	fastjson.py	/^def formatDis():$/;"	f
+getBool	fastjson.py	/^def getBool(dis):$/;"	f
+getFloat	fastjson.py	/^def getFloat(dis):$/;"	f
+getFormat	fastjson.py	/^def getFormat(dis=[]):$/;"	f
+getInt	fastjson.py	/^def getInt(dis):$/;"	f
+getStr	fastjson.py	/^def getStr(dis):$/;"	f
+getValue	fastjson.py	/^def getValue(dis,v):$/;"	f
+gpi	fastjson.py	/^def gpi(dis=[],df=None):$/;"	f
+js	fastjson.py	/^js={}$/;"	v
+listEdit	fastjson.py	/^def listEdit(dis):$/;"	f
+main	fastjson.py	/^def main():$/;"	f
+noList	fastjson.py	/^noList=['n','N','No','NO','no']$/;"	v
+showHead	fastjson.py	/^def showHead(dis):$/;"	f
+strTypeMap	fastjson.py	/^strTypeMap={$/;"	v
+trueList	fastjson.py	/^trueList=['t','T','true','TRUE','True']$/;"	v
+typeCheck	fastjson.py	/^def typeCheck(t):$/;"	f
+yesList	fastjson.py	/^yesList=['y','Y','yes','Yes','YES']$/;"	v

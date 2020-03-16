@@ -10,6 +10,10 @@ strTypeMap={
         'list':['li','list','[','[]'],
         'bool':['bool','tf']
         }
+trueList=['t','T','true','TRUE','True']
+falseList=['f','F','False','false','FALSE']
+yesList=['y','Y','yes','Yes','YES']
+noList=['n','N','No','NO','no']
 def T(v,msg=None):
     print(msg,' ',str(v))
     input()
@@ -44,19 +48,19 @@ def getFormat(dis=[]):
     formatDis()
     print('\nPlease input the dict attributes \nusage-> key:type ...\n')
     strFormat=gpi(dis)
-    if strFormat in ['','\n']:
+    if not strFormat:
         print('input nothing , exit...')
         exit()
-    listFormat=strFormat.split()
-    forMat={}
     print('strformat    %s'%strFormat)
     try:
+        listFormat=strFormat.split()
+        forMat={}
         for k_t in listFormat:
             t=k_t.split(':')
             key,typ=t
             forMat[key]=typeCheck(typ)
     except ValueError:
-        return getFormat()
+        return getFormat(dis)
     print('forMat:  %s'%forMat)
     return forMat
 
@@ -93,9 +97,9 @@ def getFloat(dis):
 def getBool(dis):
     v=gpi(dis)
     try:
-        if v in ['t','T','true','TRUE','True']:
+        if v in trueList:
             return True
-        elif v in ['f','F','False','false','FALSE']:
+        elif v in falseList:
             return False
         else:
             raise ValueError
@@ -119,7 +123,39 @@ def getValue(dis,v):
 
 def listEdit(dis):
     lis=[]
-    
+    showHead(dis)
+    print('is dict?y/n: ',end='')
+    isDict=input()
+    _dis=copy.deepcopy(dis)
+    num=0
+    if isDict in yesList:
+        forMat=getFormat(_dis)
+        while 1:
+            _dis.append(['[%s]'%num,'{}'])
+            num += 1
+            lis.append(dictEdit(_dis,forMat))
+            _dis.pop()
+            showHead(dis)
+            print('Press \'c\' to continue: ',end='')
+            isContinue=input()
+            if isContinue!='c':
+                break
+    elif isDict in noList:
+        showHead(dis)
+        print('(type): ',end='')
+        strType=input()
+        strType=typeCheck(strType)
+        while 1:
+            _dis.append(['[%s]'%num,strType])
+            num += 1
+            lis.append(getValue(_dis,strType))
+            _dis.pop()
+            showHead(dis)
+            print('Press \'c\' to continue: ',end='')
+            isContinue=input()
+            if isContinue!='c':
+                break
+    return lis
 
 
 def dictEdit(dis,forMat=None):
@@ -136,11 +172,10 @@ def dictEdit(dis,forMat=None):
         dic[k]=_v
     return dic
 
-
+dis=[('root','{}')]
 def main():
-    global js
-    js=dictEdit([('root','{}')])
+    global js,dis
+    js=dictEdit(dis)
 
 main()
-cls()
 print(json.dumps(js,indent=2))
