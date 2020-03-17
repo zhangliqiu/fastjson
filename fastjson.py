@@ -5,15 +5,17 @@ js={}
 strTypeMap={
         'int':['i','int','l','long'],
         'str':['s','str','string'],
-        'float':['f','float'],
-        'dict':['dic','dict','{','{}'],
-        'list':['li','list','[','[]'],
-        'bool':['bool','tf']
+        'flo':['f','float'],
+        '{}':['dic','dict','{','{}'],
+        '[]':['li','list','[','[]'],
+        'bol':['b','bool','tf']
         }
 trueList=['t','T','true','TRUE','True']
 falseList=['f','F','False','false','FALSE']
 yesList=['y','Y','yes','Yes','YES']
 noList=['n','N','No','NO','no']
+
+forMat={}
 def T(v,msg=None):
     print(msg,' ',str(v))
     input()
@@ -26,43 +28,80 @@ def typeCheck(t):
         return 'int'
     elif t in strTypeMap['str']:
         return 'str'
-    elif t in strTypeMap['float']:
+    elif t in strTypeMap['flo']:
         return 'flo'
-    elif t in strTypeMap['dict']:
+    elif t in strTypeMap['{}']:
         return '{}'
-    elif t in strTypeMap['list']:
+    elif t in strTypeMap['[]']:
         return '[]'
-    elif t in strTypeMap['bool']:
+    elif t in strTypeMap['bol']:
         return 'bol'
     else:
         raise ValueError
 
 def formatDis():
     for k,ts in strTypeMap.items():
-        print('%s = "'%k,end='')
+        print('%6s = '%k,end='')
         for t in ts:
-            print(t,' ',end='')
-        print('"')
+            print('%6s'%t,' ',end='')
+        print()
 
-def getFormat(dis=[]):
+def getDictFormat(dis=[],strFormat=None):
     formatDis()
-    print('\nPlease input the dict attributes \nusage-> key:type ...\n')
-    strFormat=gpi(dis)
     if not strFormat:
-        print('input nothing , exit...')
-        exit()
-    print('strformat    %s'%strFormat)
+        msg='''Please input the dict attributes
+        usage-> key:type ...'''
+        strFormat=gpi(dis)
+        if not strFormat:
+            print('input nothing , exit...')
+            exit()
     try:
         listFormat=strFormat.split()
         forMat={}
-        for k_t in listFormat:
-            t=k_t.split(':')
-            key,typ=t
-            forMat[key]=typeCheck(typ)
+        for item in listFormat:
+            key,typ=item.split(':')
+            ftyp=typeCheck(typ)
+            if ftyp=='{}':
+                dis.append([key,ftyp])
+                forMat[key]=getDictFormat(dis)
+                dis.pop()
+            elif ftyp=='[]':
+                dis.append([key,ftyp])
+                forMat[key]=getListFormat(dis)
+                dis.pop()
+            else:
+                forMat[key]=ftyp
     except ValueError:
-        return getFormat(dis)
-    print('forMat:  %s'%forMat)
+        return getDictFormat(dis)
     return forMat
+
+def getListFormat(dis=[]):
+    formatDis()
+    msg='''[] item attributes
+    is {} ? usage-> key:type ...
+    is sample class ? usage-> type'''
+    print(msg)
+    strFormat=gpi(dis)
+    if strFormat.find(':') >= 0:
+        #is {}
+        #T(strFormat,'getListFormat {} strFormat')
+        dis.append(['..','{}'])
+        forMat=getDictFormat(dis,strFormat)
+        dis.pop()
+        return [forMat]
+    elif strFormat in ['','\n']:
+        print('input nothing,exit...')
+        exit()
+    strType=strFormat.split()[0]
+    strType=typeCheck(strType)
+    if strType=='[]':
+        dis.append(['..','[]'])
+        forMat=getListFormat(dis)
+        dis.pop()
+    else:
+        # may be int,str,bol,float
+        return strType
+
 
 def showHead(dis):
     for i in dis:
@@ -174,8 +213,8 @@ def dictEdit(dis,forMat=None):
 
 dis=[('root','{}')]
 def main():
-    global js,dis
-    js=dictEdit(dis)
+    global js,dis,forMat
+    forMat=getDictFormat(dis)
 
 main()
-print(json.dumps(js,indent=2))
+print(json.dumps(forMat,indent=2))
