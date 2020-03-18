@@ -1,5 +1,6 @@
 #!/bin/python3
 import json,os,copy
+from sys import argv
 
 js={}
 strTypeMap={
@@ -10,6 +11,13 @@ strTypeMap={
         '[]':['li','list','[','[]'],
         'bol':['b','bool','tf']
         }
+configNameMap={
+        'informat':['f','format','informat'],
+        'outformat':['outformat'],
+        'outjson':['o','out'],
+        'indent':['indent']
+        }
+
 trueList=['t','T','true','TRUE','True']
 falseList=['f','F','False','false','FALSE']
 yesList=['y','Y','yes','Yes','YES']
@@ -51,7 +59,8 @@ def getDictFormat(dis=[],strFormat=None):
     if not strFormat:
         msg='''Please input the dict attributes
         usage-> key:type ...'''
-        strFormat=gpi(dis)
+        print(msg)
+        strFormat=getStrFormat(dis)
         if not strFormat:
             print('input nothing , exit...')
             exit()
@@ -75,13 +84,16 @@ def getDictFormat(dis=[],strFormat=None):
         return getDictFormat(dis)
     return forMat
 
+def getStrFormat(dis):
+    return gpi(dis,head='fm')
+
 def getListFormat(dis=[]):
     formatDis()
     msg='''[] item attributes
     is {} ? usage-> key:type ...
     is sample class ? usage-> type'''
     print(msg)
-    strFormat=gpi(dis)
+    strFormat=getStrFormat(dis)
     if strFormat.find(':') >= 0:
         #is {}
         #T(strFormat,'getListFormat {} strFormat')
@@ -100,16 +112,18 @@ def getListFormat(dis=[]):
         dis.pop()
     else:
         # may be int,str,bol,float
-        return strType
+        return [strType]
 
 
-def showHead(dis):
+def showHead(dis,head=None):
+    if head:
+        print('<%s> '%head,end='')
     for i in dis:
         key,typ=i
         print('%s(%s)-'%(key,typ),end='')
 
-def gpi(dis=[],df=None):
-    showHead(dis)
+def gpi(dis=[],df=None,head=None):
+    showHead(dis,head)
     print('>> ',end='')
     _v=input()
     if _v in ['','\n']:
@@ -117,24 +131,24 @@ def gpi(dis=[],df=None):
     return _v
 
 def getInt(dis):
-    v=gpi(dis,0)
+    v=gpi(dis,df=0,head='vl')
     try:
         return int(v)
     except Exception:
         return getInt(dis)
 
 def getStr(dis):
-    return gpi(dis,'')
+    return gpi(dis,df='',head='vl')
 
 def getFloat(dis):
-    v=gpi(dis,0)
+    v=gpi(dis,df=0,head='vl')
     try:
         return float(v)
     except Exception:
         return getFloat(dis)
 
 def getBool(dis):
-    v=gpi(dis)
+    v=gpi(dis,head='vl')
     try:
         if v in trueList:
             return True
@@ -143,78 +157,115 @@ def getBool(dis):
         else:
             raise ValueError
     except Exception:
-        return getBool(dis)
+        return getbool(dis)
+
+def getDict(forMat=None,dis=None):
+    dic={}
+    for k,v in forMat.items():
+        vtype=type(v)
+        if vtype==str:
+            dis.append([k,v])
+            dic[k]=getvalue(dis,v)
+            dis.pop()
+        elif vtype==list:
+            dis.append([k,'[]'])
+            dic[k]=getList(forMat=v,dis=dis)
+            dis.pop()
+        elif vtype==dict:
+            dis.append([k,'{}'])
+            dic[k]=getDict(forMat=v,dis=dis)
+            dis.pop()
+    return dic
 
 
-def getValue(dis,v):
+
+def getvalue(dis,v):
     if v=='int':
         return getInt(dis)
     elif v=='str':
         return getStr(dis)
     elif v=='flo':
         return getFloat(dis)
-    elif v=='{}':
-        return dictEdit(dis)
-    elif v=='[]':
-        return listEdit(dis)
     elif v=='bol':
         return getBool(dis)
 
-def listEdit(dis):
-    lis=[]
-    showHead(dis)
-    print('is dict?y/n: ',end='')
-    isDict=input()
-    _dis=copy.deepcopy(dis)
-    num=0
-    if isDict in yesList:
-        forMat=getFormat(_dis)
-        while 1:
-            _dis.append(['[%s]'%num,'{}'])
-            num += 1
-            lis.append(dictEdit(_dis,forMat))
-            _dis.pop()
-            showHead(dis)
-            print('Press \'c\' to continue: ',end='')
-            isContinue=input()
-            if isContinue!='c':
+def keyFormat(_config,keyMap):
+    config={}
+    for key,klist in keyMap.items():
+        for alikey in klist:
+            value=_config.get(alikey)
+            if value:
+                config[key]=value
                 break
-    elif isDict in noList:
-        showHead(dis)
-        print('(type): ',end='')
-        strType=input()
-        strType=typeCheck(strType)
-        while 1:
-            _dis.append(['[%s]'%num,strType])
-            num += 1
-            lis.append(getValue(_dis,strType))
-            _dis.pop()
-            showHead(dis)
-            print('Press \'c\' to continue: ',end='')
-            isContinue=input()
-            if isContinue!='c':
-                break
-    return lis
+    return config
+
+def argvParse(argv,keyMap=None):
+    n=0
+    _config={}
+    alen=len(argv)
+    while n<alen:
+        item=argv[n]
+        ilen=len(item)
+        i2=item[1]
+        if i2=='-':
+            # --indent=2
+            key,value=item[2:].split('=')
+            _config[key]=value
+            n += 1
+            continue
+        if ilen==2:
+            key,value=i2,argv[n+1]
+            _config[key]=value
+            n += 2
+            continue
+        if ilen>2:
+            key,value=i2,item[2:]
+            _config[key]=value
+            n += 1
+            continue
+    if not keyMap:
+        return _config
+    else:
+        return keyFormat(_config,keyMap)
 
 
-def dictEdit(dis,forMat=None):
-    dic={}
-    _dis=copy.deepcopy(dis)
-    if not forMat:
-        forMat=getFormat(_dis)
-    for k,v in forMat.items():
-        if v=='dict':
-            _dis.append((k,v))
-        t=copy.deepcopy(_dis)
-        t.append([k,v])
-        _v=getValue(t,v)
-        dic[k]=_v
-    return dic
+def jsSave(path,dic,indent=None):
+    with open(path,'w') as f:
+        json.dump(dic,f,indent=indent)
+    print(path,' save finished')
 
-dis=[('root','{}')]
-def main():
-    global js,dis,forMat
+def jsRead(path):
+    if os.path.isfile(path):
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except Exception:
+            print(path,' format error')
+            exit(1)
+
+if len(argv):
+    argv=argv[1:]
+
+
+#forMat=getDictFormat([['root','{}']])
+config=argvParse(argv,configNameMap)
+# informat outformat outjson indent
+dis=[['root','{}']]
+outjson=config.get('outjson')
+informat=config.get('informat')
+outformat=config.get('outformat')
+indent=config.get('indent')
+if indent:
+    indent=1
+if informat:
+    forMat=readFormat(informat)
+else:
     forMat=getDictFormat(dis)
-
-main()
-print(json.dumps(forMat,indent=2))
+    if outformat:
+        jsSave(path=outformat,dic=forMat,indent=indent)
+js=getDict(forMat=forMat,dis=dis)
+if outjson:
+    jsSave(path=outjson,dic=js,indent=indent)
+else:
+    sPath=gpi(head='out path ')
+    jsSave(path=sPath,dic=js)
