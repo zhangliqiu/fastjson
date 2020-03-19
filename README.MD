@@ -28,7 +28,7 @@ you also can save the format object is case next to use
 #### the format is recursive
 
 ## argvs
-> -f --informat` config the format file`
-> -o --outjson` the output path`
-> --indent=2 `fill the TAB on file ,is easy to read`
-> --outformat=path `to save the format object`
+ -f --informat` config the format file`
+ -o --outjson` the output path`
+ --indent=2 `fill the TAB on file ,is easy to read`
+ --outformat=path `to save the format object`
