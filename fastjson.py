@@ -293,6 +293,10 @@ else:
     if outformat:
         jsSave(path=outformat,dic=forMat,indent=indent)
 js=getDict(forMat=forMat,dis=dis)
+
+if not indent:
+    if gpi(head='if indent ? ',df=None) in yesList:
+        indent=1
 if outjson:
     jsSave(path=outjson,dic=js,indent=indent)
 else:
