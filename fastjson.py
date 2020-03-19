@@ -26,7 +26,8 @@ noList=['n','N','No','NO','no']
 forMat={}
 def T(v,msg=None):
     print(msg,' ',str(v))
-    input()
+    if input()=='q':
+        exit()
 
 def cls():
     os.system('clear')
@@ -177,7 +178,34 @@ def getDict(forMat=None,dis=None):
             dis.pop()
     return dic
 
-
+def getList(forMat,dis):
+    forMat=forMat[0]
+    lis=[]
+    ftype=type(forMat)
+    if ftype==str:
+        #simple type:
+        n=0
+        while 1:
+            dis.append(['[%s]'%n,forMat])
+            v=getvalue(dis,forMat)
+            dis.pop()
+            lis.append(v)
+            if gpi(head="press 'c' to continue")!='c':
+                break
+            n += 1
+    elif ftype==dict:
+        #return dicts
+        n=0
+        while 1:
+            dis.append(['[%s]'%n,'{}'])
+            v=getDict(forMat,dis)
+            lis.append(v)
+            dis.pop()
+            if gpi(head="press 'c' to continue")!='c':
+                break
+            n += 1
+    return lis
+    
 
 def getvalue(dis,v):
     if v=='int':
@@ -232,6 +260,7 @@ def argvParse(argv,keyMap=None):
 def jsSave(path,dic,indent=None):
     with open(path,'w') as f:
         json.dump(dic,f,indent=indent)
+        f.write('\n')
     print(path,' save finished')
 
 def jsRead(path):
@@ -258,7 +287,7 @@ indent=config.get('indent')
 if indent:
     indent=1
 if informat:
-    forMat=readFormat(informat)
+    forMat=jsRead(informat)
 else:
     forMat=getDictFormat(dis)
     if outformat:
@@ -268,4 +297,4 @@ if outjson:
     jsSave(path=outjson,dic=js,indent=indent)
 else:
     sPath=gpi(head='out path ')
-    jsSave(path=sPath,dic=js)
+    jsSave(path=sPath,dic=js,indent=indent)
