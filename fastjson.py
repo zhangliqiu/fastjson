@@ -6,10 +6,11 @@ js={}
 strTypeMap={
         'int':['i','int','l','long'],
         'str':['s','str','string'],
-        'flo':['f','float'],
+        'flo':['f','float','flo'],
         '{}':['dic','dict','{','{}'],
         '[]':['li','list','[','[]'],
-        'bol':['b','bool','tf']
+        'bol':['b','bool','bol'],
+        '?':['?']
         }
 configNameMap={
         'informat':['f','format','informat'],
@@ -25,7 +26,11 @@ noList=['n','N','No','NO','no']
 
 forMat={}
 def T(v,msg=None):
-    print(msg,' ',str(v))
+    if type(v)==dict:
+        print(json.dumps(v,indent=1))
+    else:
+        print(msg,' ',str(v))
+    print('press \'q\' to exit')
     if input()=='q':
         exit()
 
@@ -45,6 +50,8 @@ def typeCheck(t):
         return '[]'
     elif t in strTypeMap['bol']:
         return 'bol'
+    elif t in strTypeMap['?']:
+        return '?'
     else:
         raise ValueError
 
@@ -57,16 +64,15 @@ def formatDis():
 
 def getDictFormat(dis=[],strFormat=None):
     formatDis()
-    if not strFormat:
+    while not strFormat:
         msg='''Please input the dict attributes
         usage-> key:type ...'''
         print(msg)
         strFormat=getStrFormat(dis)
-        if not strFormat:
-            print('input nothing , exit...')
-            exit()
     try:
         listFormat=strFormat.split()
+        if listFormat[0]=='?':
+            return {}
         forMat={}
         for item in listFormat:
             key,typ=item.split(':')
@@ -88,13 +94,14 @@ def getDictFormat(dis=[],strFormat=None):
 def getStrFormat(dis):
     return gpi(dis,head='fm')
 
-def getListFormat(dis=[]):
+def getListFormat(dis=[],strFormat=None):
     formatDis()
-    msg='''[] item attributes
-    is {} ? usage-> key:type ...
-    is sample class ? usage-> type'''
-    print(msg)
-    strFormat=getStrFormat(dis)
+    while not strFormat:
+        msg='''[] item attributes
+        is {} ? usage-> key:type ...
+        is sample class ? usage-> type'''
+        print(msg)
+        strFormat=getStrFormat(dis)
     if strFormat.find(':') >= 0:
         #is {}
         #T(strFormat,'getListFormat {} strFormat')
@@ -111,6 +118,8 @@ def getListFormat(dis=[]):
         dis.append(['..','[]'])
         forMat=getListFormat(dis)
         dis.pop()
+    elif strType=='?':
+        return []
     else:
         # may be int,str,bol,float
         return [strType]
@@ -162,6 +171,8 @@ def getBool(dis):
 
 def getDict(forMat=None,dis=None):
     dic={}
+    while not forMat:
+        forMat=getDictFormat(dis)
     for k,v in forMat.items():
         vtype=type(v)
         if vtype==str:
@@ -179,6 +190,8 @@ def getDict(forMat=None,dis=None):
     return dic
 
 def getList(forMat,dis):
+    while not forMat:
+        forMat=getListFormat(dis)
     forMat=forMat[0]
     lis=[]
     ftype=type(forMat)
@@ -205,7 +218,26 @@ def getList(forMat,dis):
                 break
             n += 1
     return lis
-    
+
+def getTypeAndValue(dis):
+    try:
+        strForMat=getStrFormat(dis)
+        t=strForMat.split()[0]
+        if t.find(':')>-1:
+            #strForMat is dict format
+            forMat=getDictFormat(dis,strForMat)
+            return getDict(dis=dis,forMat=forMat)
+        ftype=typeCheck(t)
+        if ftype=='[]':
+            forMat=getListFormat(dis)
+            return getList(dis=dis,forMat=forMat)
+        if ftype=='?':
+            raise ValueError
+        
+        return getvalue(dis,ftype)
+
+    except Exception:
+        return getTypeAndValue(dis)
 
 def getvalue(dis,v):
     if v=='int':
@@ -216,6 +248,8 @@ def getvalue(dis,v):
         return getFloat(dis)
     elif v=='bol':
         return getBool(dis)
+    elif v=='?':
+        return getTypeAndValue(dis)
 
 def keyFormat(_config,keyMap):
     config={}
@@ -293,7 +327,6 @@ else:
     if outformat:
         jsSave(path=outformat,dic=forMat,indent=indent)
 js=getDict(forMat=forMat,dis=dis)
-
 if not indent:
     if gpi(head='if indent ? ',df=None) in yesList:
         indent=1
